@@ -6,7 +6,7 @@ from io import BytesIO
 from datetime import datetime
 
 st.set_page_config(page_title="نظام الفرق الكشفية", layout="centered")
-st.title("🛡️ نظام إدارة الفرق الكشفية")
+st.title("⚜️ نظام إدارة الفرق الكشفية")
 
 # تحميل البيانات
 try:
