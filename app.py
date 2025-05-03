@@ -21,15 +21,33 @@ except:
         "Last_Charge_Date", "Last_Loan"
     ])
     df.to_excel("scout_teams.xlsx", index=False)
+def log_action(action, team_name, details=""):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_log = pd.DataFrame([{
+        "Timestamp": timestamp,
+        "Action": action,
+        "Team_Name": team_name,
+        "Details": details
+    }])
+    log_df_updated = pd.concat([log_df, new_log], ignore_index=True)
+    log_df_updated.to_excel("team_actions_log.xlsx", index=False)
 
 try:
     inventory_df = pd.read_excel("inventory_items.xlsx")
-except:
+except FileNotFoundError:
     inventory_df = pd.DataFrame(columns=["Item_Name", "Point_Cost"])
     inventory_df.to_excel("inventory_items.xlsx", index=False)
 
+try:
+    log_df = pd.read_excel("team_actions_log.xlsx")
+except FileNotFoundError:
+    log_df = pd.DataFrame(columns=["Timestamp", "Action", "Team_Name", "Details"])
+    log_df.to_excel("team_actions_log.xlsx", index=False)
+
+
 # الشريط الجانبي
-option = st.sidebar.selectbox("القائمة الرئيسية", ["الفرق الكشفية", "تسجيل عهدة", "إدارة العهدة", "QR بيانات الفريق"])
+option = st.sidebar.selectbox("القائمة الرئيسية", ["الفرق الكشفية", "تسجيل عهدة", "إدارة العهدة", "QR بيانات الفريق", "📓 سجل الإجراءات", "شحن النقاط"])
+
 
 # --- الفرق الكشفية ---
 if option == "الفرق الكشفية":
@@ -64,6 +82,7 @@ if option == "الفرق الكشفية":
                 df = pd.concat([df, pd.DataFrame([new_team])], ignore_index=True)
                 df.to_excel("scout_teams.xlsx", index=False)
                 st.success("✅ تم إضافة الفريق بنجاح!")
+                log_action("إضافة فريق", team_name, f"القائد: {leader}")
 
     if not df.empty:
         selected_team_view = st.selectbox("اختر الفريق لعرض التفاصيل أو التعديل", df["Team_Name"].unique())
@@ -100,11 +119,14 @@ if option == "الفرق الكشفية":
                         df.at[idx, 'Penalties'] = "0"  # Clear penalties after deduction
                         df.to_excel("scout_teams.xlsx", index=False)
                         st.success("✅ تم حفظ التعديلات")
+                        log_action("تعديل فريق", team_name, f"نقاط: {final_points}, قائد: {leader}")
+
 
                 if st.button("🗑️ حذف الفريق", key=f"delete_{idx}"):
                     df = df.drop(idx).reset_index(drop=True)
                     df.to_excel("scout_teams.xlsx", index=False)
                     st.warning("⚠️ تم حذف الفريق")
+                    log_action("حذف فريق", row["Team_Name"])
                     st.experimental_rerun()
 
 # --- تسجيل عهدة ---
@@ -127,6 +149,8 @@ elif option == "تسجيل عهدة":
                     df.at[idx, "Last_Loan"] = f"{item_selected} × {item_quantity} ({datetime.now().date()})"
                     df.to_excel("scout_teams.xlsx", index=False)
                     st.success(f"✅ تم تسليم {item_quantity} × {item_selected} وخصم {total_cost} نقطة")
+                    log_action("تسليم عهدة", team_for_loan, f"{item_quantity} × {item_selected} - خصم {total_cost} نقطة")
+
                 else:
                     st.error("❌ الرصيد غير كافٍ")
             else:
@@ -203,3 +227,36 @@ elif option == "QR بيانات الفريق":
         )
     else:
         st.warning("⚠️ لم يتم العثور على بيانات للفريق المحدد.")
+        # --- سجل الإجراءات ---
+elif option == "📓 سجل الإجراءات":
+    st.header("📓 سجل كافة الإجراءات على الفرق")
+    try:
+        log_df = pd.read_excel("team_actions_log.xlsx")
+        st.dataframe(log_df.sort_values(by="Timestamp", ascending=False), use_container_width=True)
+    except:
+        st.warning("⚠️ لا يوجد سجل حتى الآن.")
+
+elif option == "شحن النقاط":
+    st.header("💳 شحن نقاط الفريق")
+    
+    # اختر الفريق الذي سيتم شحن نقاطه
+    team_for_recharge = st.selectbox("اختر الفريق", df["Team_Name"].unique(), key="recharge_team")
+    recharge_points = st.number_input("عدد النقاط التي سيتم شحنها", min_value=1, step=1)
+
+    if st.button("📤 شحن النقاط"):
+        team_index = df[df["Team_Name"] == team_for_recharge].index
+        if not team_index.empty:
+            idx = team_index[0]
+            # إضافة النقاط
+            df.at[idx, "Points"] += recharge_points
+            df.at[idx, "Last_Charge_Date"] = datetime.now().date()  # تحديث تاريخ الشحن
+            df.to_excel("scout_teams.xlsx", index=False)
+
+            # تأكيد عملية الشحن
+            st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
+
+            # تسجيل السجل الخاص بعملية الشحن
+            log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
+        else:
+            st.error("❌ الفريق غير موجود")
+
