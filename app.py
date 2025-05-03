@@ -112,21 +112,29 @@ elif option == "تسجيل عهدة":
     st.header("📦 تسجيل عهدة لفريق")
     team_for_loan = st.selectbox("اختر الفريق", df["Team_Name"].unique(), key="loan_team")
     item_selected = st.selectbox("اختر العهدة", inventory_df["Item_Name"], key="item_select")
+    item_quantity = st.number_input("عدد الوحدات", min_value=1, step=1, value=1)
 
     if st.button("📤 تأكيد تسليم العهدة"):
         team_index = df[df["Team_Name"] == team_for_loan].index
         if not team_index.empty:
-            item_cost = inventory_df[inventory_df["Item_Name"] == item_selected]["Point_Cost"].values[0]
-            idx = team_index[0]
-            if df.at[idx, "Points"] >= item_cost:
-                df.at[idx, "Points"] -= item_cost
-                df.at[idx, "Last_Loan"] = f"{item_selected} ({datetime.now().date()})"
-                df.to_excel("scout_teams.xlsx", index=False)
-                st.success(f"✅ تم تسليم {item_selected} وخصم {item_cost} نقطة")
+            item_row = inventory_df[inventory_df["Item_Name"] == item_selected]
+            if not item_row.empty:
+                item_cost = item_row["Point_Cost"].values[0]
+                total_cost = item_cost * item_quantity
+                idx = team_index[0]
+                if df.at[idx, "Points"] >= total_cost:
+                    df.at[idx, "Points"] -= total_cost
+                    df.at[idx, "Last_Loan"] = f"{item_selected} × {item_quantity} ({datetime.now().date()})"
+                    df.to_excel("scout_teams.xlsx", index=False)
+                    st.success(f"✅ تم تسليم {item_quantity} × {item_selected} وخصم {total_cost} نقطة")
+                else:
+                    st.error("❌ الرصيد غير كافٍ")
             else:
-                st.error("❌ الرصيد غير كافٍ")
+                st.error("❌ العهدة غير موجودة")
         else:
             st.error("❌ الفريق غير موجود")
+
+
 
 # --- إدارة العهدة ---
 elif option == "إدارة العهدة":
