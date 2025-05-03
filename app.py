@@ -259,4 +259,3 @@ elif option == "شحن النقاط":
             log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
         else:
             st.error("❌ الفريق غير موجود")
-
