@@ -230,11 +230,51 @@ elif option == "QR بيانات الفريق":
         # --- سجل الإجراءات ---
 elif option == "📓 سجل الإجراءات":
     st.header("📓 سجل كافة الإجراءات على الفرق")
+
     try:
         log_df = pd.read_excel("team_actions_log.xlsx")
-        st.dataframe(log_df.sort_values(by="Timestamp", ascending=False), use_container_width=True)
+
+        st.subheader("🔍 تصفية السجل")
+
+        # خيارات التصفية
+        team_filter = st.selectbox("اختر الفريق (أو اتركه بلا اختيار لعرض الكل)", [""] + sorted(log_df["Team_Name"].unique()))
+        action_filter = st.selectbox("اختر نوع الإجراء (أو اتركه بلا اختيار لعرض الكل)", [""] + sorted(log_df["Action"].unique()))
+
+        # تطبيق التصفية
+        filtered_df = log_df.copy()
+        if team_filter:
+            filtered_df = filtered_df[filtered_df["Team_Name"] == team_filter]
+        if action_filter:
+            filtered_df = filtered_df[filtered_df["Action"] == action_filter]
+
+        if filtered_df.empty:
+            st.info("❗ لا توجد نتائج مطابقة للتصفية.")
+        else:
+            st.subheader("📋 السجل بعد التصفية")
+            for i, row in filtered_df.sort_values(by="Timestamp", ascending=False).iterrows():
+                with st.expander(f"🕒 {row['Timestamp']} - {row['Action']} - {row['Team_Name']}"):
+                    st.write(f"📌 التفاصيل: {row['Details']}")
+                    delete_pin = st.text_input(f"رمز الحذف لإجراء رقم {i}", type="password", key=f"pin_{i}")
+                    if st.button(f"🗑️ حذف هذا الإجراء", key=f"del_{i}"):
+                        if delete_pin == "12":  # الرقم السري الصحيح
+                            # تحديد السطر بدقة
+                            original_index = log_df[
+                                (log_df["Timestamp"] == row["Timestamp"]) &
+                                (log_df["Action"] == row["Action"]) &
+                                (log_df["Team_Name"] == row["Team_Name"]) &
+                                (log_df["Details"] == row["Details"])
+                            ].index
+                            if not original_index.empty:
+                                log_df = log_df.drop(original_index).reset_index(drop=True)
+                                log_df.to_excel("team_actions_log.xlsx", index=False)
+                                st.success("✅ تم حذف هذا الإجراء.")
+                                st.experimental_rerun()
+                        else:
+                            st.error("❌ الرقم السري غير صحيح!")
+
     except:
         st.warning("⚠️ لا يوجد سجل حتى الآن.")
+
 
 elif option == "شحن النقاط":
     st.header("💳 شحن نقاط الفريق")
@@ -259,3 +299,4 @@ elif option == "شحن النقاط":
             log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
         else:
             st.error("❌ الفريق غير موجود")
+
