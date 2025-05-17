@@ -1,3 +1,19 @@
+from supabase import create_client, Client
+
+# بيانات الدخول الخاصة بمشروع Supabase بتاعك
+url: str = "https://supabase.com/dashboard/project/aembrtkzmiijydugyfhj"
+key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlbWJydGt6bWlpanlkdWd5ZmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzA2OTcsImV4cCI6MjA2MzA0NjY5N30.whD0YcVBMZ6hRd5QDtiNyGYGe5OUFwOfa1x4fuX2w9w"
+
+supabase: Client = create_client(url, key)
+def log_action(action, table_name, description, team_id):
+    data = {
+        "action": action,
+        "table_name": table_name,
+        "description": description,
+        "team_id": team_id
+    }
+    supabase.table("action_log").insert(data).execute()
+
 import streamlit as st
 import pandas as pd
 from datetime import datetime
