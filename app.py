@@ -153,6 +153,7 @@ if option == "الفرق الكشفية":
 # --- تسجيل عهدة ---
 elif option == "تسجيل عهدة":
     st.header("📦 تسجيل عهدة لفريق")
+    st.write("الأعمدة المتوفرة:", df.columns.tolist())
     team_for_loan = st.selectbox("اختر الفريق", df["Team_Name"].unique(), key="loan_team")
     item_selected = st.selectbox("اختر العهدة", inventory_df["Item_Name"], key="item_select")
     item_quantity = st.number_input("عدد الوحدات", min_value=1, step=1, value=1)
