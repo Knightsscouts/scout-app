@@ -1,7 +1,7 @@
 from supabase import create_client, Client
 
 # بيانات الدخول الخاصة بمشروع Supabase بتاعك
-url: str = "https://supabase.com/dashboard/project/aembrtkzmiijydugyfhj"
+url: str = "https://aembrtkzmiijydugyfhj.supabase.co"
 key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlbWJydGt6bWlpanlkdWd5ZmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NzA2OTcsImV4cCI6MjA2MzA0NjY5N30.whD0YcVBMZ6hRd5QDtiNyGYGe5OUFwOfa1x4fuX2w9w"
 
 supabase: Client = create_client(url, key)
