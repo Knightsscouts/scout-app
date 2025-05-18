@@ -85,33 +85,34 @@ if option == "الفرق الكشفية":
             points = st.number_input("النقاط", min_value=0, step=1)
             penalties = st.text_input("العقوبات")
             submitted = st.form_submit_button("إضافة الفريق")
-if submitted:
-    if not team_name or not leader:
-        st.error("❌ يجب ملء اسم الفريق والقائد.")
-    else:
-        new_team = {
-            "Team_ID": team_id,
-            "Team_Name": team_name,
-            "Leader": leader,
-            "Assistants": assistants or "",
-            "Resources": resources or "",
-            "Balance": balance,
-            "Expiration_Date": expiration_date.isoformat(),
-            "Points": points,
-            "Penalties": penalties or "0",
-            "Last_Charge_Date": datetime.now().date().isoformat(),
-            "Last_Loan": "-"
-        }
-        st.write("🔎 البيانات المُرسلة:", new_team)  # تطبع البيانات للمراجعة
 
-        try:
-            supabase.table('teams').insert(new_team).execute()
-            st.success("✅ تم إضافة الفريق بنجاح!")
-            log_action("إضافة فريق", team_name, f"القائد: {leader}")
-            df = get_teams()
-        except Exception as e:
-            st.error("❌ حدث خطأ أثناء الإضافة.")
-            st.text(str(e))
+        if submitted:  # ✅ هنا جوّا الـ expander
+            if not team_name or not leader:
+                st.error("❌ يجب ملء اسم الفريق والقائد.")
+            else:
+                new_team = {
+                    "Team_ID": team_id,
+                    "Team_Name": team_name,
+                    "Leader": leader,
+                    "Assistants": assistants or "",
+                    "Resources": resources or "",
+                    "Balance": balance,
+                    "Expiration_Date": expiration_date.isoformat(),
+                    "Points": points,
+                    "Penalties": penalties or "0",
+                    "Last_Charge_Date": datetime.now().date().isoformat(),
+                    "Last_Loan": "-"
+                }
+                st.write("🔎 البيانات المُرسلة:", new_team)
+
+                try:
+                    supabase.table('teams').insert(new_team).execute()
+                    st.success("✅ تم إضافة الفريق بنجاح!")
+                    log_action("إضافة فريق", team_name, f"القائد: {leader}")
+                    df = get_teams()
+                except Exception as e:
+                    st.error("❌ حدث خطأ أثناء الإضافة.")
+                    st.text(str(e))
 
 
     if not df.empty:
