@@ -17,6 +17,7 @@ def log_action(action, table_name, description, team_id):
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import numpy as np
 import qrcode
 from io import BytesIO
 from PIL import Image
