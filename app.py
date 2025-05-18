@@ -308,7 +308,7 @@ elif option == "📓 سجل الإجراءات":
 # --- شحن النقاط ---
 elif option == "شحن النقاط":
     st.header("💳 شحن نقاط الفريق")
-    
+
     team_for_recharge = st.selectbox("اختر الفريق", df["Team_Name"].unique(), key="recharge_team")
     recharge_points = st.number_input("عدد النقاط التي سيتم شحنها", min_value=1, step=1)
 
@@ -316,28 +316,30 @@ elif option == "شحن النقاط":
         team_row = df[df["Team_Name"] == team_for_recharge]
         if not team_row.empty:
             current_points = team_row.iloc[0]["Points"]
-            st.write("Points value type:", type(current_points))
-            new_points = int(current_points) + int(recharge_points)
-
+            new_points = int(current_points) + int(recharge_points)  # تأكد إنها أعداد صحيحة
+            
             last_charge_date_str = datetime.now().strftime("%Y-%m-%d")
-            team_id = str(team_row.iloc[0]['Team_ID'])
-
-            st.write(f"new_points type: {type(new_points)} value: {new_points}")
-            st.write(f"last_charge_date_str type: {type(last_charge_date_str)} value: {last_charge_date_str}")
-            st.write(f"team_id type: {type(team_id)} value: {team_id}")
-
+            
+            team_id = team_row.iloc[0]['Team_ID']
+            # تأكد تحويل team_id لنوع صحيح لو لازم
+            if isinstance(team_id, (np.integer,)):
+                team_id = int(team_id)
+            else:
+                team_id = int(team_id)  # أو تحويل صريح لو هو نص
+            
             response = supabase.table('teams').update({
                 'Points': new_points,
                 'Last_Charge_Date': last_charge_date_str
             }).eq('Team_ID', team_id).execute()
-
-            st.write("Supabase response:", response)
-
-            if response.status_code == 200 or response.status_code == 204:
+            
+            st.write("Response from Supabase:", response)  # اطبع الاستجابة عشان تشوف شكلها
+            
+            # افحص إذا response dict وفيه بيانات
+            if isinstance(response, dict) and response.get('data'):
                 st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
                 log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
                 df = get_teams()
             else:
-                st.error(f"❌ حدث خطأ في تحديث النقاط: {response}")
+                st.error("❌ حدث خطأ في تحديث النقاط.")
         else:
             st.error("❌ الفريق غير موجود")
