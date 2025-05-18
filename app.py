@@ -329,18 +329,16 @@ elif option == "شحن النقاط":
                 team_id = int(team_id)  # أو تحويل صريح لو هو نص
             
             response = supabase.table('teams').update({
-                'Points': new_points,
-                'Last_Charge_Date': last_charge_date_str
-            }).eq('Team_ID', team_id).execute()
-            
-            st.write("Response from Supabase:", response)  # اطبع الاستجابة عشان تشوف شكلها
-            
-            # افحص إذا response dict وفيه بيانات
-            if isinstance(response, dict) and response.get('data'):
-                st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
-                log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
-                df = get_teams()
-            else:
-                st.error("❌ حدث خطأ في تحديث النقاط.")
+    'Points': int(new_points),
+    'Last_Charge_Date': last_charge_date_str
+}).eq('Team_ID', str(team_row.iloc[0]['Team_ID'])).execute()
+
+if response.data:
+    st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
+    log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
+    df = get_teams()
+else:
+    st.error("❌ حدث خطأ في تحديث النقاط.")
+
         else:
             st.error("❌ الفريق غير موجود")
