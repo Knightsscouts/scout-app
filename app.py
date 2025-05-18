@@ -318,15 +318,28 @@ elif option == "شحن النقاط":
             current_points = team_row.iloc[0]["Points"]
             new_points = current_points + recharge_points
             
-            last_charge_date_str = datetime.now().strftime("%Y-%m-%d")  # حول التاريخ لنص
+            last_charge_date_str = datetime.now().strftime("%Y-%m-%d")  # نص التاريخ
             
-            supabase.table('teams').update({
+            team_id = team_row.iloc[0]['Team_ID']
+            # تأكد من نوع team_id
+            team_id = str(team_id)
+
+            st.write("team_id:", team_id)
+            st.write("new_points:", new_points)
+            st.write("last_charge_date_str:", last_charge_date_str)
+
+            response = supabase.table('teams').update({
                 'Points': new_points,
                 'Last_Charge_Date': last_charge_date_str
-            }).eq('Team_ID', team_row.iloc[0]['Team_ID']).execute()
+            }).eq('Team_ID', team_id).execute()
 
-            st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
-            log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
-            df = get_teams()
+            st.write("Response from Supabase:", response)
+
+            if response.status_code == 200 or response.status_code == 204:
+                st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
+                log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
+                df = get_teams()
+            else:
+                st.error(f"❌ حدث خطأ في تحديث النقاط: {response.error_message if hasattr(response, 'error_message') else response}")
         else:
             st.error("❌ الفريق غير موجود")
