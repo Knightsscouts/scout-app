@@ -169,33 +169,36 @@ elif option == "تسجيل عهدة":
     item_quantity = st.number_input("عدد الوحدات", min_value=1, step=1, value=1)
 
     if st.button("📤 تأكيد تسليم العهدة"):
-        team_row = df[df["Team_Name"] == team_for_loan]
-        if not team_row.empty:
-            item_row = inventory_df[inventory_df["Item_Name"] == item_selected]
-            if not item_row.empty:
-                item_cost = item_row["Point_Cost"].values[0]
-                total_cost = item_cost * item_quantity
-                team_points = team_row.iloc[0]["Points"]
+    team_row = df[df["Team_Name"] == team_for_loan]
+    if not team_row.empty:
+        item_row = inventory_df[inventory_df["Item_Name"] == item_selected]
+        if not item_row.empty:
+            item_cost = item_row["Point_Cost"].values[0]
+            total_cost = item_cost * item_quantity
+            team_points = team_row.iloc[0]["Points"]
+            
+            if team_points >= total_cost:
+                new_points = team_points - total_cost
                 
-                if team_points >= total_cost:
-                    new_points = team_points - total_cost
-                    supabase.table('teams').update({
-                        'Points': new_points,
-                        'Last_Loan': f"{item_selected} × {item_quantity} ({datetime.now().date().isoformat()})"
-                    }).eq('Team_ID', team_row.iloc[0]['Team_ID']).execute()
+                # تحويل Team_ID لـ int (أو str لو نوعه نصي)
+                team_id = int(team_row.iloc[0]['Team_ID'])
 
-                  
-
-                    
-                    st.success(f"✅ تم تسليم {item_quantity} × {item_selected} وخصم {total_cost} نقطة")
-                    log_action("تسليم عهدة", team_for_loan, f"{item_quantity} × {item_selected} - خصم {total_cost} نقطة")
-                    df = get_teams()
-                else:
-                    st.error("❌ الرصيد غير كافٍ")
+                # تحديث البيانات في Supabase
+                supabase.table('teams').update({
+                    'Points': int(new_points),
+                    'Last_Loan': f"{item_selected} × {item_quantity} ({datetime.now().date().isoformat()})"
+                }).eq('Team_ID', team_id).execute()
+                
+                st.success(f"✅ تم تسليم {item_quantity} × {item_selected} وخصم {total_cost} نقطة")
+                log_action("تسليم عهدة", team_for_loan, f"{item_quantity} × {item_selected} - خصم {total_cost} نقطة")
+                df = get_teams()
             else:
-                st.error("❌ العهدة غير موجودة")
+                st.error("❌ الرصيد غير كافٍ")
         else:
-            st.error("❌ الفريق غير موجود")
+            st.error("❌ العهدة غير موجودة")
+    else:
+        st.error("❌ الفريق غير موجود")
+
 
 # --- إدارة العهدة ---
 elif option == "إدارة العهدة":
