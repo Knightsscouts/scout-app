@@ -309,7 +309,7 @@ elif option == "📓 سجل الإجراءات":
 # --- شحن النقاط ---
 elif option == "شحن النقاط":
     st.header("💳 شحن نقاط الفريق")
-
+    
     team_for_recharge = st.selectbox("اختر الفريق", df["Team_Name"].unique(), key="recharge_team")
     recharge_points = st.number_input("عدد النقاط التي سيتم شحنها", min_value=1, step=1)
 
@@ -317,31 +317,27 @@ elif option == "شحن النقاط":
         team_row = df[df["Team_Name"] == team_for_recharge]
         if not team_row.empty:
             current_points = team_row.iloc[0]["Points"]
-            new_points = int(current_points) + int(recharge_points)  # تأكد إنها أعداد صحيحة
+            new_points = current_points + recharge_points
             
             last_charge_date_str = datetime.now().strftime("%Y-%m-%d")
+            team_id = team_row.iloc[0]["Team_ID"]
             
-            team_id = team_row.iloc[0]['Team_ID']
-            # تأكد تحويل team_id لنوع صحيح لو لازم
+            # تأكد من أن Team_ID نوعه نص وليس numpy.int64
             if isinstance(team_id, (np.integer,)):
                 team_id = int(team_id)
             else:
-                team_id = int(team_id)  # أو تحويل صريح لو هو نص
-                response = supabase.table('teams').update({
-                    'Points': int(new_points),
-                    'Last_Charge_Date': last_charge_date_str
-                }).eq('Team_ID', str(team_row.iloc[0]['Team_ID'])).execute()
-
-if response.data:
-    st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
-    log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
-    df = get_teams()
-else:
-    st.error("❌ حدث خطأ في تحديث النقاط.")
-else:
-    st.error("❌ حدث خطأ في تحديث النقاط.")
+                team_id = str(team_id)
             
-            
+            response = supabase.table('teams').update({
+                'Points': int(new_points),
+                'Last_Charge_Date': last_charge_date_str
+            }).eq('Team_ID', team_id).execute()
 
+            if response.data:
+                st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
+                log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
+                df = get_teams()
+            else:
+                st.error("❌ حدث خطأ في تحديث النقاط.")
         else:
             st.error("❌ الفريق غير موجود")
