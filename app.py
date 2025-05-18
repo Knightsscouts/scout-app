@@ -169,7 +169,7 @@ elif option == "تسجيل عهدة":
     item_quantity = st.number_input("عدد الوحدات", min_value=1, step=1, value=1)
 
     if st.button("📤 تأكيد تسليم العهدة"):
-    team_row = df[df["Team_Name"] == team_for_loan]
+        team_row = df[df["Team_Name"] == team_for_loan]
     if not team_row.empty:
         item_row = inventory_df[inventory_df["Item_Name"] == item_selected]
         if not item_row.empty:
@@ -198,6 +198,7 @@ elif option == "تسجيل عهدة":
             st.error("❌ العهدة غير موجودة")
     else:
         st.error("❌ الفريق غير موجود")
+    
 
 
 # --- إدارة العهدة ---
