@@ -180,9 +180,9 @@ elif option == "تسجيل عهدة":
                 if team_points >= total_cost:
                     new_points = team_points - total_cost
                    supabase.table('teams').update({
-                       'Points': new_points,
+                        'Points': new_points,
                        'Last_Loan': f"{item_selected} × {item_quantity} ({datetime.now().date().isoformat()})"
-                   }).eq('Team_ID', team_row.iloc[0]['Team_ID']).execute()
+                    }).eq('Team_ID', team_row.iloc[0]['Team_ID']).execute()
 
 
                     
