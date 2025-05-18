@@ -318,9 +318,11 @@ elif option == "شحن النقاط":
             current_points = team_row.iloc[0]["Points"]
             new_points = current_points + recharge_points
             
+            last_charge_date_str = datetime.now().strftime("%Y-%m-%d")  # حول التاريخ لنص
+            
             supabase.table('teams').update({
                 'Points': new_points,
-                'Last_Charge_Date': datetime.now().date().isoformat()
+                'Last_Charge_Date': last_charge_date_str
             }).eq('Team_ID', team_row.iloc[0]['Team_ID']).execute()
 
             st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
