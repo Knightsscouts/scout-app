@@ -316,30 +316,28 @@ elif option == "شحن النقاط":
         team_row = df[df["Team_Name"] == team_for_recharge]
         if not team_row.empty:
             current_points = team_row.iloc[0]["Points"]
-            new_points = current_points + recharge_points
-            
-            last_charge_date_str = datetime.now().strftime("%Y-%m-%d")  # نص التاريخ
-            
-            team_id = team_row.iloc[0]['Team_ID']
-            # تأكد من نوع team_id
-            team_id = str(team_id)
+            st.write("Points value type:", type(current_points))
+            new_points = int(current_points) + int(recharge_points)
 
-            st.write("team_id:", team_id)
-            st.write("new_points:", new_points)
-            st.write("last_charge_date_str:", last_charge_date_str)
+            last_charge_date_str = datetime.now().strftime("%Y-%m-%d")
+            team_id = str(team_row.iloc[0]['Team_ID'])
+
+            st.write(f"new_points type: {type(new_points)} value: {new_points}")
+            st.write(f"last_charge_date_str type: {type(last_charge_date_str)} value: {last_charge_date_str}")
+            st.write(f"team_id type: {type(team_id)} value: {team_id}")
 
             response = supabase.table('teams').update({
                 'Points': new_points,
                 'Last_Charge_Date': last_charge_date_str
             }).eq('Team_ID', team_id).execute()
 
-            st.write("Response from Supabase:", response)
+            st.write("Supabase response:", response)
 
             if response.status_code == 200 or response.status_code == 204:
                 st.success(f"✅ تم شحن {recharge_points} نقطة للفريق {team_for_recharge}")
                 log_action("شحن نقاط", team_for_recharge, f"تم شحن {recharge_points} نقطة")
                 df = get_teams()
             else:
-                st.error(f"❌ حدث خطأ في تحديث النقاط: {response.error_message if hasattr(response, 'error_message') else response}")
+                st.error(f"❌ حدث خطأ في تحديث النقاط: {response}")
         else:
             st.error("❌ الفريق غير موجود")
