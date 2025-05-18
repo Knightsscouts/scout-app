@@ -170,7 +170,7 @@ elif option == "تسجيل عهدة":
 
     if st.button("📤 تأكيد تسليم العهدة"):
         team_row = df[df["Team_Name"] == team_for_loan]
-    if not team_row.empty:
+        if not team_row.empty:
         item_row = inventory_df[inventory_df["Item_Name"] == item_selected]
         if not item_row.empty:
             item_cost = item_row["Point_Cost"].values[0]
@@ -198,6 +198,7 @@ elif option == "تسجيل عهدة":
             st.error("❌ العهدة غير موجودة")
     else:
         st.error("❌ الفريق غير موجود")
+    
     
 
 
