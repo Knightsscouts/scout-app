@@ -99,6 +99,7 @@ if option == "الفرق الكشفية":
                     "Last_Charge_Date": datetime.now().date().isoformat(),
                     "Last_Loan": "-"
                 }
+                st.write("🔎 البيانات المُرسلة:", new_team)
                 supabase.table('teams').insert(new_team).execute()
                 st.success("✅ تم إضافة الفريق بنجاح!")
                 log_action("إضافة فريق", team_name, f"القائد: {leader}")
